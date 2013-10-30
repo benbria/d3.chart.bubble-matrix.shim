@@ -74,7 +74,7 @@
     chart = this.chart();
     if (chart.colKey_) {
       chart.bubbleKey_ = function(d, i){
-        return chart.colKey_(data.cols[i]);
+        return chart.colKey_(data.cols[i], i);
       };
     } else {
       chart.bubbleKey_ = undefined;
@@ -128,16 +128,14 @@
     var chart, key, bubbles;
     chart = this.chart();
     if (chart.bubbleKey_ != null) {
-      key = function(d, i){
+      key = function(){
         if (this instanceof Array) {
-          return chart.bubbleKey_(d, i);
+          return chart.bubbleKey_.apply(this, arguments);
         }
         return this.__key__;
       };
     }
-    bubbles = this.selectAll('circle').data(function(d){
-      return chart.rowData_(d);
-    }, key);
+    bubbles = this.selectAll('circle').data(chart.rowData_, key);
     bubbles.enter().append('circle').call(bubbleEnter, chart);
     bubbles.exit().call(bubbleExit, chart);
     bubbles.call(bubbleMerge, chart);
