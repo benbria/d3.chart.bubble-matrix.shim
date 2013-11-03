@@ -97,7 +97,7 @@
     });
   };
   bubbleMerge = function(sel, chart){
-    return this.attr('stroke-width', STROKE_WIDTH * chart.radiusScale_(1));
+    return this.attr('stroke-width', STROKE_WIDTH * chart.maxRadius_);
   };
   bubbleExit = function(sel, chart){
     return this.remove();
@@ -354,7 +354,7 @@
     chart = this.chart();
     range = chart.xScale_.range();
     left = chart.leftMargin_;
-    tickHeight = TICK_HEIGHT * chart.radiusScale_(1);
+    tickHeight = TICK_HEIGHT * chart.maxRadius_;
     path = "M " + left + " -" + tickHeight / 2 + " v " + tickHeight;
     path += "M " + left + " 0 H " + range[range.length - 1];
     return this.select('path').attr('d', path);
@@ -443,7 +443,8 @@
       padding = this.ruler_.extentOfChar('W').height;
       this.bottomMargin_ = bottom + padding * 1.3;
       delta = this.xScale_(1) - this.xScale_(0);
-      this.radiusScale_.range([0, delta * (1 - RADIUS_PADDING) / 2]);
+      this.maxRadius_ = delta * (1 - RADIUS_PADDING) / 2;
+      this.radiusScale_.range([0, this.maxRadius_]);
       return {
         rows: rows,
         cols: cols
