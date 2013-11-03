@@ -27,7 +27,7 @@
       }
       this[name] = it;
       if (fn != null) {
-        fn(it);
+        fn.call(this, it);
       }
       return this;
     };
