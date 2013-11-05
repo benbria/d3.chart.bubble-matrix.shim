@@ -1,4 +1,7 @@
-/*! d3.chart.bubble-matrix v0.1.0 - MIT Expat */
+/*! d3.chart.bubble-matrix v0.1.1 - MIT Expat */
+// We should use `grunt-umd` instead of this explicit intro, but the tool does
+// not camelize lib names containing '.' or '-', making the generated JS
+// invalid; needs a pull request.
 (function(mod) {
     // CommonJS, Node.js, browserify.
     if (typeof exports === "object" && typeof module === "object") {
@@ -374,8 +377,10 @@
 }).call(this);
 
 (function(){
-  var makeProp, HZ_PADDING, VT_PADDING, RADIUS_PADDING, DEFAULT_PALETTE, defaultColorScale;
+  var makeProp, CHART_NAME, CHART_ID, HZ_PADDING, VT_PADDING, RADIUS_PADDING, DEFAULT_PALETTE, defaultColorScale;
   makeProp = exports.makeProp;
+  CHART_NAME = 'BubbleMatrix';
+  CHART_ID = 'd3-chart-bubble-matrix';
   HZ_PADDING = 1.0;
   VT_PADDING = 1.0;
   RADIUS_PADDING = 0.1;
@@ -383,11 +388,11 @@
   defaultColorScale = function(){
     return d3.scale.quantize().domain([0, 1]).range(DEFAULT_PALETTE);
   };
-  exports.bubbleMatrix = d3.chart('BaseChart').extend('BubbleMatrix', {
+  exports.Chart = d3.chart('BaseChart').extend(CHART_NAME, {
     initialize: function(){
       var i$, ref$, len$, layer, gr, results$ = [];
       this.loadDefaults_();
-      this.base.classed('d3-chart-bubble-matrix', true);
+      this.base.classed(CHART_ID, true);
       this.xScale_ = d3.scale.ordinal();
       this.yScale_ = d3.scale.ordinal();
       this.radiusScale_ = d3.scale.sqrt();
@@ -485,5 +490,5 @@
   });
 }).call(this);
 
-    return exports.bubbleMatrix;
+    return exports;
 });
