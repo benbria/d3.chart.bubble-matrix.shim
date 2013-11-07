@@ -1,4 +1,4 @@
-/*! d3.chart.bubble-matrix v0.1.1 - MIT Expat */
+/*! d3.chart.bubble-matrix v0.1.2 - MIT Expat */
 // We should use `grunt-umd` instead of this explicit intro, but the tool does
 // not camelize lib names containing '.' or '-', making the generated JS
 // invalid; needs a pull request.
@@ -106,6 +106,7 @@
     return this.remove();
   };
   bubbleMergeTransition = function(sel, chart){
+    this.duration(chart.duration_);
     this.attr('opacity', 1);
     this.attr('cx', function(d, i){
       return chart.xScale_(i);
@@ -152,6 +153,7 @@
   o.events['update:transition'] = function(){
     var chart;
     chart = this.chart();
+    this.duration(chart.duration_);
     return this.call(transformRow, chart);
   };
   o.events['exit'] = function(){
@@ -264,11 +266,15 @@
     return this.text(chart.colHeader_);
   };
   o.events['enter:transition'] = function(){
+    var chart;
+    chart = this.chart();
+    this.duration(chart.duration_);
     return this.attr('opacity', 1);
   };
   o.events['update:transition'] = function(){
     var chart;
     chart = this.chart();
+    this.duration(chart.duration_);
     return this.call(transformCol, chart);
   };
   o.events['exit'] = function(){
@@ -313,14 +319,21 @@
     });
   };
   o.events['enter:transition'] = function(){
+    var chart;
+    chart = this.chart();
+    this.duration(chart.duration_);
     return this.attr('opacity', 1);
   };
   o.events['update:transition'] = function(){
     var chart;
     chart = this.chart();
+    this.duration(chart.duration_);
     return this.call(transformRow, chart);
   };
   o.events['exit:transition'] = function(){
+    var chart;
+    chart = this.chart();
+    this.duration(chart.duration_);
     return this.attr('opacity', 0).remove();
   };
   exports.layers['row-header'] = o;
@@ -363,14 +376,21 @@
     return this.select('path').attr('d', path);
   };
   o.events['enter:transition'] = function(){
+    var chart;
+    chart = this.chart();
+    this.duration(chart.duration_);
     return this.attr('opacity', 1);
   };
   o.events['update:transition'] = function(){
     var chart;
     chart = this.chart();
+    this.duration(chart.duration_);
     return this.call(transformThread, chart);
   };
   o.events['exit:transition'] = function(){
+    var chart;
+    chart = this.chart();
+    this.duration(chart.duration_);
     return this.attr('opacity', 0).remove();
   };
   exports.layers['thread'] = o;
@@ -428,7 +448,8 @@
         return it[1];
       });
       this.colorScale_ || this.colorScale(defaultColorScale());
-      return this.slanted_ || this.slanted(false);
+      this.slanted_ || this.slanted(false);
+      return this.duration_ || this.duration(250);
     },
     transform: function(data){
       var rows, cols, left, bottom, xDelta, yDelta, delta, right, padding;
@@ -486,7 +507,8 @@
       return this.radiusScale_.domain(it);
     }),
     colorScale: makeProp('colorScale_'),
-    slanted: makeProp('slanted_')
+    slanted: makeProp('slanted_'),
+    duration: makeProp('duration_')
   });
 }).call(this);
 
