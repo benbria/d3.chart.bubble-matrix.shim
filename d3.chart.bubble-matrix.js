@@ -22,9 +22,9 @@
   "use strict";
   var exports = {};
 
-(function(){
-  exports.makeProp = function(name, fn){
-    return function(it){
+(function() {
+  exports.makeProp = function(name, fn) {
+    return function(it) {
       if (it == null) {
         return this[name];
       }
@@ -35,104 +35,118 @@
       return this;
     };
   };
-  exports.textRuler = function(svgSel){
+
+  exports.textRuler = function(svgSel) {
     var onTmpText, ruler;
-    onTmpText = function(str, fn){
+    onTmpText = function(str, fn) {
       var el, result;
       el = svgSel.append('text').text(str);
       result = fn(el);
       el.remove();
       return result;
     };
-    ruler = ld.memoize(function(str){
-      return onTmpText(str, function(it){
+    ruler = ld.memoize(function(str) {
+      return onTmpText(str, function(it) {
         return it.node().getComputedTextLength();
       });
     });
-    ruler.extentOfChar = ld.memoize(function(char){
+    ruler.extentOfChar = ld.memoize(function(char) {
       if (char.length < 1) {
         throw new Error('char can\'t be empty');
       }
       if (char.length > 1) {
         throw new Error('can get extent of a full string');
       }
-      return onTmpText(char, function(it){
+      return onTmpText(char, function(it) {
         return it.node().getExtentOfChar(0);
       });
     });
     ruler.onTmpText = onTmpText;
     return ruler;
   };
+
   exports.layers = {};
+
 }).call(this);
 
-(function(){
-  var o, STROKE_WIDTH, bubbleEnter, bubbleMerge, bubbleExit, bubbleMergeTransition, transformRow;
+(function() {
+  var STROKE_WIDTH, bubbleEnter, bubbleExit, bubbleMerge, bubbleMergeTransition, o, transformRow;
+
   o = {
     events: {}
   };
+
   STROKE_WIDTH = 0.15;
-  o.dataBind = function(data){
+
+  o.dataBind = function(data) {
     var chart;
     chart = this.chart();
     if (chart.colKey_) {
-      chart.bubbleKey_ = function(d, i){
+      chart.bubbleKey_ = function(d, i) {
         return chart.colKey_(data.cols[i], i);
       };
     } else {
-      chart.bubbleKey_ = undefined;
+      chart.bubbleKey_ = void 0;
     }
     return this.selectAll('g.row').data(data.rows, chart.rowKey_);
   };
-  o.insert = function(){
+
+  o.insert = function() {
     var chart;
     chart = this.chart();
     return this.append('g').classed('row', true);
   };
-  bubbleEnter = function(sel, chart){
+
+  bubbleEnter = function(sel, chart) {
     this.attr('r', 0);
-    this.attr('fill', function(d){
+    this.attr('fill', function(d) {
       return chart.colorScale_(chart.color_(d));
     });
     this.attr('opacity', 0);
-    return this.attr('cx', function(d, i){
+    return this.attr('cx', function(d, i) {
       return chart.xScale_(i);
     });
   };
-  bubbleMerge = function(sel, chart){
+
+  bubbleMerge = function(sel, chart) {
     return this.attr('stroke-width', STROKE_WIDTH * chart.maxRadius_);
   };
-  bubbleExit = function(sel, chart){
+
+  bubbleExit = function(sel, chart) {
     return this.remove();
   };
-  bubbleMergeTransition = function(sel, chart){
+
+  bubbleMergeTransition = function(sel, chart) {
     this.duration(chart.duration_);
     this.attr('opacity', 1);
-    this.attr('cx', function(d, i){
+    this.attr('cx', function(d, i) {
       return chart.xScale_(i);
     });
-    this.attr('r', function(d){
+    this.attr('r', function(d) {
       return chart.radiusScale_(chart.size_(d));
     });
-    return this.attr('fill', function(d){
+    return this.attr('fill', function(d) {
       return chart.colorScale_(chart.color_(d));
     });
   };
-  transformRow = function(sel, chart){
-    return this.attr('transform', function(d, i){
-      return "translate(0," + chart.yScale_(i) + ")";
+
+  transformRow = function(sel, chart) {
+    return this.attr('transform', function(d, i) {
+      return "translate(0," + (chart.yScale_(i)) + ")";
     });
   };
-  o.events['enter'] = function(){
+
+  o.events['enter'] = function() {
     var chart;
     chart = this.chart();
     return this.call(transformRow, chart);
   };
-  o.events['merge'] = function(){
-    var chart, key, bubbles;
+
+  o.events['merge'] = function() {
+    var bubbles, chart, key;
     chart = this.chart();
     if (chart.bubbleKey_ != null) {
-      key = function(){
+      key = function() {
         if (this instanceof Array) {
           return chart.bubbleKey_.apply(this, arguments);
         }
@@ -144,22 +158,26 @@
     bubbles.exit().call(bubbleExit, chart);
     bubbles.call(bubbleMerge, chart);
     if (key != null) {
-      bubbles.each(function(d, i){
+      bubbles.each(function(d, i) {
         return this.__key__ = chart.bubbleKey_(d, i);
       });
     }
     return bubbles.transition().call(bubbleMergeTransition, chart);
   };
-  o.events['update:transition'] = function(){
+
+  o.events['update:transition'] = function() {
     var chart;
     chart = this.chart();
     this.duration(chart.duration_);
     return this.call(transformRow, chart);
   };
-  o.events['exit'] = function(){
+
+  o.events['exit'] = function() {
     return this.remove();
   };
+
   exports.layers['bubble'] = o;
+
 }).call(this);
 
 (function(){
@@ -229,188 +247,231 @@
   exports.bubblesOptions = o;
 }).call(this);
 
-(function(){
+(function() {
   var o, transformCol;
+
   o = {
     events: {}
   };
-  o.dataBind = function(data){
+
+  o.dataBind = function(data) {
     var chart;
     chart = this.chart();
     return this.selectAll('text').data(data.cols, chart.colKey_);
   };
-  o.insert = function(){
+
+  o.insert = function() {
     var chart;
     chart = this.chart();
     return this.append('text').attr('opacity', 0);
   };
-  transformCol = function(sel, chart){
+
+  transformCol = function(sel, chart) {
     var bottom, slanted;
     bottom = chart.bottomMargin_;
     slanted = chart.slanted_;
-    return this.attr('transform', function(d, i){
+    return this.attr('transform', function(d, i) {
       var result;
-      result = "translate(" + chart.xScale_(i) + "," + bottom + ")";
+      result = "translate(" + (chart.xScale_(i)) + "," + bottom + ")";
       if (slanted) {
         result += 'rotate(45)';
       }
       return result;
     });
   };
-  o.events['enter'] = function(){
+
+  o.events['enter'] = function() {
     return this.call(transformCol, this.chart());
   };
-  o.events['merge'] = function(){
+
+  o.events['merge'] = function() {
     var chart;
     chart = this.chart();
     return this.text(chart.colHeader_);
   };
-  o.events['enter:transition'] = function(){
+
+  o.events['enter:transition'] = function() {
     var chart;
     chart = this.chart();
     this.duration(chart.duration_);
     return this.attr('opacity', 1);
   };
-  o.events['update:transition'] = function(){
+
+  o.events['update:transition'] = function() {
     var chart;
     chart = this.chart();
     this.duration(chart.duration_);
     return this.call(transformCol, chart);
   };
-  o.events['exit'] = function(){
+
+  o.events['exit'] = function() {
     return this.remove();
   };
+
   exports.layers['col-header'] = o;
+
 }).call(this);
 
-(function(){
+(function() {
   var o, transformRow;
+
   o = {
     events: {}
   };
-  o.dataBind = function(data){
+
+  o.dataBind = function(data) {
     var chart;
     chart = this.chart();
     return this.selectAll('text').data(data.rows, chart.rowKey_);
   };
-  o.insert = function(){
+
+  o.insert = function() {
     var chart;
     chart = this.chart();
-    return this.append('text').attr('opacity', 0).attr('dy', '.38em');
+    return this.append('text').attr('opacity', 0).attr('dy', '0.38em');
   };
-  transformRow = function(sel, chart){
-    var width, left;
+
+  transformRow = function(sel, chart) {
+    var left, width;
     width = chart.width();
     left = chart.rowHeaderLeft_;
-    return this.attr('transform', function(d, i){
-      return "translate(" + left + "," + chart.yScale_(i) + ")";
+    return this.attr('transform', function(d, i) {
+      return "translate(" + left + "," + (chart.yScale_(i)) + ")";
     });
   };
-  o.events['enter'] = function(){
+
+  o.events['enter'] = function() {
     var chart;
     chart = this.chart();
     return this.call(transformRow, chart);
   };
-  o.events['merge'] = function(){
+
+  o.events['merge'] = function() {
     var chart;
     chart = this.chart();
-    return this.text(function(){
+    return this.text(function() {
       return chart.rowHeader_.apply(this, arguments);
     });
   };
-  o.events['enter:transition'] = function(){
+
+  o.events['enter:transition'] = function() {
     var chart;
     chart = this.chart();
     this.duration(chart.duration_);
     return this.attr('opacity', 1);
   };
-  o.events['update:transition'] = function(){
+
+  o.events['update:transition'] = function() {
     var chart;
     chart = this.chart();
     this.duration(chart.duration_);
     return this.call(transformRow, chart);
   };
-  o.events['exit:transition'] = function(){
+
+  o.events['exit:transition'] = function() {
     var chart;
     chart = this.chart();
     this.duration(chart.duration_);
     return this.attr('opacity', 0).remove();
   };
+
   exports.layers['row-header'] = o;
+
 }).call(this);
 
-(function(){
-  var o, TICK_HEIGHT, transformThread;
+(function() {
+  var TICK_HEIGHT, o, transformThread;
+
   o = {
     events: {}
   };
+
   TICK_HEIGHT = 1;
-  o.dataBind = function(data){
+
+  o.dataBind = function(data) {
     var chart;
     chart = this.chart();
     return this.selectAll('g.thread').data(data.rows, chart.rowKey_);
   };
-  o.insert = function(){
+
+  o.insert = function() {
     var chart, g;
     chart = this.chart();
     g = this.append('g').classed('thread', true).attr('opacity', 0);
     g.append('path');
     return g;
   };
-  transformThread = function(sel, chart){
-    return this.attr('transform', function(d, i){
-      return "translate(0," + chart.yScale_(i) + ")";
+
+  transformThread = function(sel, chart) {
+    return this.attr('transform', function(d, i) {
+      return "translate(0," + (chart.yScale_(i)) + ")";
     });
   };
-  o.events['enter'] = function(){
+
+  o.events['enter'] = function() {
     return this.call(transformThread, this.chart());
   };
-  o.events['merge'] = function(){
-    var chart, range, left, tickHeight, path;
+
+  o.events['merge'] = function() {
+    var chart, left, path, range, tickHeight;
     chart = this.chart();
     range = chart.xScale_.range();
     left = chart.leftMargin_;
     tickHeight = TICK_HEIGHT * chart.maxRadius_;
-    path = "M " + left + " -" + tickHeight / 2 + " v " + tickHeight;
+    path = "M " + left + " -" + (tickHeight / 2) + " v " + tickHeight;
     path += "M " + left + " 0 H " + range[range.length - 1];
     return this.select('path').attr('d', path);
   };
-  o.events['enter:transition'] = function(){
+
+  o.events['enter:transition'] = function() {
     var chart;
     chart = this.chart();
     this.duration(chart.duration_);
     return this.attr('opacity', 1);
   };
-  o.events['update:transition'] = function(){
+
+  o.events['update:transition'] = function() {
     var chart;
     chart = this.chart();
     this.duration(chart.duration_);
     return this.call(transformThread, chart);
   };
-  o.events['exit:transition'] = function(){
+
+  o.events['exit:transition'] = function() {
     var chart;
     chart = this.chart();
     this.duration(chart.duration_);
     return this.attr('opacity', 0).remove();
   };
+
   exports.layers['thread'] = o;
+
 }).call(this);
 
-(function(){
-  var makeProp, CHART_NAME, CHART_ID, HZ_PADDING, VT_PADDING, RADIUS_PADDING, DEFAULT_PALETTE, defaultColorScale;
+(function() {
+  var CHART_ID, CHART_NAME, DEFAULT_PALETTE, HZ_PADDING, RADIUS_PADDING, VT_PADDING, defaultColorScale, makeProp;
+
   makeProp = exports.makeProp;
+
   CHART_NAME = 'BubbleMatrix';
+
   CHART_ID = 'd3-chart-bubble-matrix';
+
   HZ_PADDING = 1.0;
+
   VT_PADDING = 1.0;
+
   RADIUS_PADDING = 0.1;
+
   DEFAULT_PALETTE = ['#b2182b', '#d6604d', '#f4a582', '#fddbc7', '#f7f7f7', '#d1e5f0', '#92c5de', '#4393c3', '#2166ac'];
-  defaultColorScale = function(){
+
+  defaultColorScale = function() {
     return d3.scale.quantize().domain([0, 1]).range(DEFAULT_PALETTE);
   };
+
   exports.Chart = d3.chart('BaseChart').extend(CHART_NAME, {
-    initialize: function(){
-      var i$, ref$, len$, layer, gr, results$ = [];
+    initialize: function() {
+      var gr, layer, _i, _len, _ref, _results;
       this.loadDefaults_();
       this.base.classed(CHART_ID, true);
       this.xScale_ = d3.scale.ordinal();
@@ -418,41 +479,43 @@
       this.radiusScale_ = d3.scale.sqrt();
       this.leftMargin_ = 0;
       this.ruler_ = exports.textRuler(this.base);
-      for (i$ = 0, len$ = (ref$ = ['thread', 'bubble', 'row-header', 'col-header']).length; i$ < len$; ++i$) {
-        layer = ref$[i$];
+      _ref = ['thread', 'bubble', 'row-header', 'col-header'];
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        layer = _ref[_i];
         gr = this.base.append('g').classed(layer, true);
-        results$.push(this.layer(layer, gr, exports.layers[layer]));
+        _results.push(this.layer(layer, gr, exports.layers[layer]));
       }
-      return results$;
+      return _results;
     },
-    loadDefaults_: function(){
-      this.rows_ || this.rows(function(it){
-        return it.rows;
+    loadDefaults_: function() {
+      this.rows_ || this.rows(function(d) {
+        return d.rows;
       });
-      this.rowHeader_ || this.rowHeader(function(it){
-        return it.name;
+      this.rowHeader_ || this.rowHeader(function(d) {
+        return d.name;
       });
-      this.rowData_ || this.rowData(function(it){
-        return it.values;
+      this.rowData_ || this.rowData(function(d) {
+        return d.values;
       });
-      this.column_ || this.columns(function(it){
-        return it.columns;
+      this.column_ || this.columns(function(d) {
+        return d.columns;
       });
-      this.colHeader_ || this.colHeader(function(it){
-        return it;
+      this.colHeader_ || this.colHeader(function(d) {
+        return d;
       });
-      this.size_ || this.size(function(it){
-        return it[0];
+      this.size_ || this.size(function(d) {
+        return d[0];
       });
-      this.color_ || this.color(function(it){
-        return it[1];
+      this.color_ || this.color(function(d) {
+        return d[1];
       });
       this.colorScale_ || this.colorScale(defaultColorScale());
       this.slanted_ || this.slanted(false);
       return this.duration_ || this.duration(250);
     },
-    transform: function(data){
-      var rows, cols, left, bottom, xDelta, yDelta, delta, right, padding;
+    transform: function(data) {
+      var bottom, cols, delta, left, padding, right, rows, xDelta, yDelta;
       rows = this.rows_(data);
       cols = this.columns_(data);
       left = this.updateLeftMargin_(rows, this.width());
@@ -461,14 +524,14 @@
       yDelta = (bottom - 0) / rows.length;
       this.xScale_.domain(d3.range(0, cols.length));
       this.yScale_.domain(d3.range(0, rows.length));
-      delta = xDelta < yDelta ? xDelta : yDelta;
+      delta = Math.min(xDelta, yDelta);
       right = left + delta * cols.length;
       bottom = delta * rows.length;
       this.xScale_.rangePoints([left, right], HZ_PADDING);
       this.yScale_.rangePoints([0, bottom], VT_PADDING);
       padding = this.ruler_.extentOfChar('W').height;
       this.bottomMargin_ = bottom + padding * 1.3;
-      delta = this.xScale_(1) - this.xScale_(0);
+      delta = (this.xScale_(1)) - (this.xScale_(0));
       this.maxRadius_ = delta * (1 - RADIUS_PADDING) / 2;
       this.radiusScale_.range([0, this.maxRadius_]);
       return {
@@ -476,13 +539,14 @@
         cols: cols
       };
     },
-    updateLeftMargin_: function(data, width){
-      var leftMargin, padding, this$ = this;
+    updateLeftMargin_: function(data, width) {
+      var leftMargin, maxWidth, padding,
+        _this = this;
       leftMargin = this.leftMargin_;
-      this.rowHeaderLeft_ = ld.reduce(data, function(r, d){
-        var ref$;
-        return r > (ref$ = this$.ruler_(this$.rowHeader_(d))) ? r : ref$;
-      });
+      maxWidth = function(r, d, i) {
+        return Math.max(r, _this.ruler_(_this.rowHeader_(d, i)));
+      };
+      this.rowHeaderLeft_ = ld.reduce(data, maxWidth, 0);
       padding = this.ruler_.extentOfChar('W').width;
       this.rowHeaderLeft_ += padding;
       this.leftMargin_ = this.rowHeaderLeft_ + padding;
@@ -491,7 +555,7 @@
       }
       return this.leftMargin_ + this.ruler_.extentOfChar('W').width;
     },
-    getMaxBottom_: function(data, height){
+    getMaxBottom_: function(data, height) {
       return height - 2 * this.ruler_.extentOfChar('W').height;
     },
     rows: makeProp('rows_'),
@@ -503,13 +567,14 @@
     colKey: makeProp('colKey_'),
     size: makeProp('size_'),
     color: makeProp('color_'),
-    sizeDomain: makeProp('sizeDomain_', function(it){
+    sizeDomain: makeProp('sizeDomain_', function(it) {
       return this.radiusScale_.domain(it);
     }),
     colorScale: makeProp('colorScale_'),
     slanted: makeProp('slanted_'),
     duration: makeProp('duration_')
   });
+
 }).call(this);
 
     return exports;
