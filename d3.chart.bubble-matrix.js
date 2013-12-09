@@ -1,4 +1,4 @@
-/*! d3.chart.bubble-matrix v0.1.2 - MIT Expat */
+/*! d3.chart.bubble-matrix v0.1.4 - MIT Expat */
 // We should use `grunt-umd` instead of this explicit intro, but the tool does
 // not camelize lib names containing '.' or '-', making the generated JS
 // invalid; needs a pull request.
@@ -478,7 +478,6 @@
       this.yScale_ = d3.scale.ordinal();
       this.radiusScale_ = d3.scale.sqrt();
       this.leftMargin_ = 0;
-      this.ruler_ = exports.textRuler(this.base);
       _ref = ['thread', 'bubble', 'row-header', 'col-header'];
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -516,6 +515,7 @@
     },
     transform: function(data) {
       var bottom, cols, delta, left, padding, right, rows, xDelta, yDelta;
+      this.ruler_ = exports.textRuler(this.base);
       rows = this.rows_(data);
       cols = this.columns_(data);
       left = this.updateLeftMargin_(rows, this.width());
