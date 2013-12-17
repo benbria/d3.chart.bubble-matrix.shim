@@ -8,7 +8,7 @@
         module.exports = mod(require('d3'),
                              require('d3.chart'),
                              require('d3.chart.base'),
-                             requure('lodash'));
+                             require('lodash'));
         return;
     }
     // AMD.
@@ -178,73 +178,6 @@
 
   exports.layers['bubble'] = o;
 
-}).call(this);
-
-(function(){
-  var o, RADIUS_PADDING, STROKE_WIDTH, bubbleEnter, bubbleMerge, bubbleMergeTransition;
-  o = {
-    events: {}
-  };
-  RADIUS_PADDING = 0.1;
-  STROKE_WIDTH = 0.15;
-  o.dataBind = function(data){
-    var chart, delta, delta2;
-    chart = this.chart();
-    chart.yScale_.domain(d3.range(0, data.length));
-    chart.xScale_.domain(d3.range(0, chart.rowData_(data[0]).length));
-    delta = chart.xScale_(1) - chart.xScale_(0);
-    delta2 = chart.yScale_(1) - chart.yScale_(0);
-    delta = delta < delta2 ? delta : delta2;
-    chart.radiusScale_.range([0, delta * (1 - RADIUS_PADDING) / 2]);
-    return this.selectAll('g.row').data(data);
-  };
-  o.insert = function(){
-    var chart;
-    chart = this.chart();
-    return this.append('g').classed('row', true);
-  };
-  bubbleEnter = function(sel, chart){
-    this.attr('r', 0);
-    return this.attr('fill', 'white');
-  };
-  bubbleMerge = function(sel, chart){
-    this.attr('cx', function(d, i){
-      return chart.xScale_(i);
-    });
-    return this.attr('stroke-width', STROKE_WIDTH * chart.radiusScale_(1));
-  };
-  bubbleMergeTransition = function(sel, chart){
-    this.delay(function(d, i, j){
-      return i * 10 + j * 10;
-    });
-    this.duration(300);
-    this.attr('r', function(d){
-      return chart.radiusScale_(chart.radius_(d));
-    });
-    return this.each(function(d){
-      var color;
-      color = chart.colorScale_(chart.color_(d));
-      return d3.select(this).transition().attr('fill', color);
-    });
-  };
-  o.events['merge'] = function(){
-    var chart, bubbles;
-    chart = this.chart();
-    this.attr('transform', function(d, i){
-      return "translate(0," + chart.yScale_(i) + ")";
-    });
-    bubbles = this.selectAll('circle').data(function(d){
-      return chart.rowData_(d);
-    });
-    bubbles.enter().append('circle').call(bubbleEnter, chart);
-    return bubbles.call(bubbleMerge, chart);
-  };
-  o.events['merge:transition'] = function(){
-    var chart;
-    chart = this.chart();
-    return this.selectAll('circle').call(bubbleMergeTransition, chart);
-  };
-  exports.bubblesOptions = o;
 }).call(this);
 
 (function() {
