@@ -1,4 +1,4 @@
-/*! d3.chart.bubble-matrix v0.1.4 - MIT Expat */
+/*! d3.chart.bubble-matrix v0.1.6 - MIT Expat */
 // We should use `grunt-umd` instead of this explicit intro, but the tool does
 // not camelize lib names containing '.' or '-', making the generated JS
 // invalid; needs a pull request.
@@ -234,7 +234,8 @@
     var chart;
     chart = this.chart();
     this.duration(chart.duration_);
-    return this.call(transformCol, chart);
+    this.call(transformCol, chart);
+    return this.attr('opacity', 1);
   };
 
   o.events['exit'] = function() {
@@ -298,7 +299,8 @@
     var chart;
     chart = this.chart();
     this.duration(chart.duration_);
-    return this.call(transformRow, chart);
+    this.call(transformRow, chart);
+    return this.attr('opacity', 1);
   };
 
   o.events['exit:transition'] = function() {
@@ -367,7 +369,8 @@
     var chart;
     chart = this.chart();
     this.duration(chart.duration_);
-    return this.call(transformThread, chart);
+    this.call(transformThread, chart);
+    return this.attr('opacity', 1);
   };
 
   o.events['exit:transition'] = function() {
