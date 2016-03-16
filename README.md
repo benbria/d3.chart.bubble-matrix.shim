@@ -17,6 +17,7 @@ to bower.
     <body>
         <div id='vis'>
         <script src="lodash/dist/lodash.js"></script>
+        <script src="d3/d3.js"></script>
         <script src="d3.chart/d3.chart.js"></script>
         <script src="d3.chart.base/d3.chart.base.js"></script>
         <script src="d3.chart.bubble-matrix/d3.chart.bubble-matrix.js"></script>
