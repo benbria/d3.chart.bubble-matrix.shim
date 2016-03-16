@@ -36,6 +36,22 @@
     };
   };
 
+  function memoize(func, resolver) {
+    if (!typeof func == 'function') {
+      throw new TypeError;
+    }
+    var memoized = function() {
+      var cache = memoized.cache,
+          key = resolver ? resolver.apply(this, arguments) : keyPrefix + arguments[0];
+
+      return hasOwnProperty.call(cache, key)
+        ? cache[key]
+        : (cache[key] = func.apply(this, arguments));
+    }
+    memoized.cache = {};
+    return memoized;
+  }
+
   exports.textRuler = function(svgSel) {
     var onTmpText, ruler;
     onTmpText = function(str, fn) {
@@ -45,12 +61,12 @@
       el.remove();
       return result;
     };
-    ruler = ld.memoize(function(str) {
+    ruler = memoize(function(str) {
       return onTmpText(str, function(it) {
         return it.node().getComputedTextLength();
       });
     });
-    ruler.extentOfChar = ld.memoize(function(char) {
+    ruler.extentOfChar = memoize(function(char) {
       if (char.length < 1) {
         throw new Error('char can\'t be empty');
       }
@@ -482,7 +498,9 @@
       maxWidth = function(r, d, i) {
         return Math.max(r, _this.ruler_(_this.rowHeader_(d, i)));
       };
-      this.rowHeaderLeft_ = ld.reduce(data, maxWidth, 0);
+      this.rowHeaderLeft = data.reduce(function (r, d, i) {
+        return maxWidth(r, d, i);
+      }, 0);
       padding = this.ruler_.extentOfChar('W').width;
       this.rowHeaderLeft_ += padding;
       this.leftMargin_ = this.rowHeaderLeft_ + padding;
