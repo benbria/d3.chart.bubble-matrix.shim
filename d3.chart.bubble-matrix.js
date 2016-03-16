@@ -1,4 +1,4 @@
-/*! d3.chart.bubble-matrix v0.1.6 - MIT Expat */
+/*! d3.chart.bubble-matrix v0.1.7 - MIT Expat */
 // We should use `grunt-umd` instead of this explicit intro, but the tool does
 // not camelize lib names containing '.' or '-', making the generated JS
 // invalid; needs a pull request.
@@ -132,7 +132,7 @@
 
   transformRow = function(sel, chart) {
     return this.attr('transform', function(d, i) {
-      return "translate(0," + (chart.yScale_(i)) + ")";
+      return "translate(0," + (chart.yScale_(i) + 20) + ")";
     });
   };
 
@@ -205,7 +205,7 @@
     slanted = chart.slanted_;
     return this.attr('transform', function(d, i) {
       var result;
-      result = "translate(" + (chart.xScale_(i)) + "," + bottom + ")";
+      result = "translate(" + (chart.xScale_(i)) + "," + (bottom + 20)  + ")";
       if (slanted) {
         result += 'rotate(45)';
       }
@@ -247,6 +247,72 @@
 }).call(this);
 
 (function() {
+  var o, transformCol;
+
+  o = {
+    events: {}
+  };
+
+  o.dataBind = function(data) {
+    var chart;
+    chart = this.chart();
+    return this.selectAll('text').data(data.cols, chart.colKey_);
+  };
+
+  o.insert = function() {
+    var chart;
+    chart = this.chart();
+    return this.append('text').attr('opacity', 0);
+  };
+
+  transformCol = function(sel, chart) {
+    var bottom, slanted;
+    bottom = 10;
+    slanted = chart.slanted_;
+    return this.attr('transform', function(d, i) {
+      var result;
+      result = "translate(" + (chart.xScale_(i)) + "," + bottom + ")";
+      if (slanted) {
+        result += 'rotate(45)';
+      }
+      return result;
+    });
+  };
+
+  o.events['enter'] = function() {
+    return this.call(transformCol, this.chart());
+  };
+
+  o.events['merge'] = function() {
+    var chart;
+    chart = this.chart();
+    return this.text(chart.colHeader_);
+  };
+
+  o.events['enter:transition'] = function() {
+    var chart;
+    chart = this.chart();
+    this.duration(chart.duration_);
+    return this.attr('opacity', 1);
+  };
+
+  o.events['update:transition'] = function() {
+    var chart;
+    chart = this.chart();
+    this.duration(chart.duration_);
+    this.call(transformCol, chart);
+    return this.attr('opacity', 1);
+  };
+
+  o.events['exit'] = function() {
+    return this.remove();
+  };
+
+  exports.layers['col-header-top'] = o;
+
+}).call(this);
+
+(function() {
   var o, transformRow;
 
   o = {
@@ -270,7 +336,7 @@
     width = chart.width();
     left = chart.rowHeaderLeft_;
     return this.attr('transform', function(d, i) {
-      return "translate(" + left + "," + (chart.yScale_(i)) + ")";
+      return "translate(" + left + "," + (chart.yScale_(i) + 20) + ")";
     });
   };
 
@@ -339,7 +405,7 @@
 
   transformThread = function(sel, chart) {
     return this.attr('transform', function(d, i) {
-      return "translate(0," + (chart.yScale_(i)) + ")";
+      return "translate(0," + (chart.yScale_(i) + 20) + ")";
     });
   };
 
@@ -414,7 +480,7 @@
       this.yScale_ = d3.scale.ordinal();
       this.radiusScale_ = d3.scale.sqrt();
       this.leftMargin_ = 0;
-      _ref = ['thread', 'bubble', 'row-header', 'col-header'];
+      _ref = ['thread', 'bubble', 'row-header', 'col-header', 'col-header-top'];
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         layer = _ref[_i];
@@ -455,7 +521,7 @@
       rows = this.rows_(data);
       cols = this.columns_(data);
       left = this.updateLeftMargin_(rows, this.width());
-      bottom = this.getMaxBottom_(cols, this.height());
+      bottom = this.getMaxBottom_(cols, this.height() - 20);
       xDelta = (this.width() - left) / cols.length;
       yDelta = (bottom - 0) / rows.length;
       this.xScale_.domain(d3.range(0, cols.length));
@@ -492,7 +558,7 @@
       return this.leftMargin_ + this.ruler_.extentOfChar('W').width;
     },
     getMaxBottom_: function(data, height) {
-      return height - 2 * this.ruler_.extentOfChar('W').height;
+      return height - 2 * (this.ruler_.extentOfChar('W').height);
     },
     rows: makeProp('rows_'),
     rowHeader: makeProp('rowHeader_'),
